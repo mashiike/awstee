@@ -218,6 +218,7 @@ func newS3Writer(client S3Client, cfg *S3Config, outputName string) (*s3Writer, 
 		if !cfg.AllowOverwrite {
 			return nil, err
 		}
+		log.Println("[debug] check s3 object:", err)
 	} else {
 		if exists && !cfg.AllowOverwrite {
 			return nil, fmt.Errorf("s3://%s/%s is already exists, not allow overwrite", bucket, key)

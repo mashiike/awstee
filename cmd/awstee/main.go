@@ -69,7 +69,11 @@ func main() {
 		r = os.Stdin
 	} else {
 		r = awsTeeReader
-		defer awsTeeReader.Close()
+		defer func() {
+			if err := awsTeeReader.Close(); err != nil {
+				log.Println("[error] close tee reader:", err)
+			}
+		}()
 	}
 
 	s := bufio.NewScanner(r)
