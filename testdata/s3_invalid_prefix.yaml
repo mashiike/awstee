@@ -1,0 +1,7 @@
+required_version: ">=0.0.0"
+
+s3:
+  url_prefix: "example-com"
+
+cloudwatch:
+  log_group: "/example/logs/"
