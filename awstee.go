@@ -225,6 +225,17 @@ func newS3Writer(client S3Client, cfg *S3Config, outputName string) (*s3Writer, 
 		}
 	}
 	uploader := manager.NewUploader(client)
+	if cfg.FirstlyPutEmptyObject {
+		log.Println("[debug] s3 put empty object")
+		_, err := uploader.Upload(ctx, &s3.PutObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+			Body:   strings.NewReader(""),
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
 	bw, err := newBackgroundWriter(func(_ context.Context, pr *io.PipeReader, c chan<- error) {
 		log.Println("[debug] start s3 writer")
 		defer func() {

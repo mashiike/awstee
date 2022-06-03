@@ -58,7 +58,7 @@ $ brew install mashiike/tap/awstee
 ```shell
 $ awstee -h    
 awstee is a tee command-like tool with AWS as the output destination
-version: v0.1.0 
+version: v0.3.0 
   -aws-region string
         aws region
   -buffer-lines int
@@ -69,15 +69,56 @@ version: v0.1.0
         cloudwatch logs log group if not exists, create target log group
   -flush-interval string
         cloudwatch logs output flush interval duration (default "5s")
-  -i    receive interrupt signal
+  -i    ignore interrupt signal
   -log-group-name string
         destination cloudwatch logs log group name
   -log-level string
         awstee log level (default "info")
+  -s3-allow-overwrite
+        allow overwriting if the s3 object already exists?
+  -s3-firstly-put-empty-object
+        put object from first for authority checks, etc.
   -s3-url-prefix string
         destination s3 url prefix
   -x    exit if an error occurs during initialization
 ```
+
+## IAM Role Policy
+
+Permissions that `awstee` may have access to are as follows
+
+```json 
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "S3Access",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:AbortMultipartUpload",
+                "s3:ListBucket"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "CloudwatchLogsAccess",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:CreateLogGroup",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Note: `logs:CreateLogGroup` privilege is used only when the `-create-log-group` option is enabled.
+
 
 ## LICENSE
 

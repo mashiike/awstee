@@ -30,9 +30,10 @@ type Config struct {
 }
 
 type S3Config struct {
-	URLPrefix      string `yaml:"url_prefix,omitempty"`
-	AllowOverwrite bool   `yaml:"allow_overwrite,omitempty"`
-	urlPrefix      *url.URL
+	URLPrefix             string `yaml:"url_prefix,omitempty"`
+	AllowOverwrite        bool   `yaml:"allow_overwrite,omitempty"`
+	FirstlyPutEmptyObject bool   `yaml:"firstly_put_empty_object,omitempty"`
+	urlPrefix             *url.URL
 }
 
 type CloudwatchLogsConfig struct {
@@ -115,6 +116,8 @@ func (cfg *S3Config) Restrict() error {
 
 func (cfg *S3Config) SetFlags(f *flag.FlagSet) {
 	flag.StringVar(&cfg.URLPrefix, "s3-url-prefix", cfg.URLPrefix, "destination s3 url prefix")
+	flag.BoolVar(&cfg.AllowOverwrite, "s3-allow-overwrite", false, "allow overwriting if the s3 object already exists?")
+	flag.BoolVar(&cfg.FirstlyPutEmptyObject, "s3-firstly-put-empty-object", false, "put object from first for authority checks, etc.")
 }
 
 func (cfg *CloudwatchLogsConfig) Restrict() error {
