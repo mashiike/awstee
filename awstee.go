@@ -236,6 +236,8 @@ func newS3Writer(client S3Client, cfg *S3Config, outputName string) (*s3Writer, 
 		})
 		if err != nil {
 			c <- err
+		} else {
+			log.Printf("[debug] s3 upload success")
 		}
 	})
 	if err != nil {
@@ -329,7 +331,7 @@ func newCloudWatchLogsWriter(client CloudwatchLogsClient, cfg *CloudwatchLogsCon
 					events = append(events, line)
 				}
 				if len(events) >= cfg.BufferLines {
-					log.Printf("[debug] over limit put log %d events", len(events))
+					log.Printf("[debug] over limit cloudwatch put log %d events", len(events))
 					output, err := client.PutLogEvents(context.Background(), &cloudwatchlogs.PutLogEventsInput{
 						LogGroupName:  aws.String(logGroup),
 						LogStreamName: aws.String(logStream),
@@ -345,7 +347,7 @@ func newCloudWatchLogsWriter(client CloudwatchLogsClient, cfg *CloudwatchLogsCon
 				}
 			case <-t.C:
 				if len(events) > 0 {
-					log.Printf("[debug] flush interval put log %d events", len(events))
+					log.Printf("[debug] flush interval cloudwatch put log %d events", len(events))
 					output, err := client.PutLogEvents(context.Background(), &cloudwatchlogs.PutLogEventsInput{
 						LogGroupName:  aws.String(logGroup),
 						LogStreamName: aws.String(logStream),
@@ -368,7 +370,7 @@ func newCloudWatchLogsWriter(client CloudwatchLogsClient, cfg *CloudwatchLogsCon
 			events = append(events, line)
 		}
 		if len(events) > 0 {
-			log.Printf("[debug] on close put log %d events", len(events))
+			log.Printf("[debug] on close cloudwatch put log %d events", len(events))
 			_, err := client.PutLogEvents(context.Background(), &cloudwatchlogs.PutLogEventsInput{
 				LogGroupName:  aws.String(logGroup),
 				LogStreamName: aws.String(logStream),
