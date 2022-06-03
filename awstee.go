@@ -79,6 +79,7 @@ type AWSTeeReader struct {
 }
 
 func (app *AWSTee) TeeReader(r io.Reader, outputName string) (*AWSTeeReader, error) {
+	log.Println("[debug] try create aws tee reader")
 	writeClosers := make([]io.WriteCloser, 0)
 	if app.cfg.EnableS3() {
 		w, err := newS3Writer(app.client.S3, app.cfg.S3, outputName)
@@ -113,6 +114,7 @@ func newAWSTeeReader(r io.Reader, writeClosers []io.WriteCloser) *AWSTeeReader {
 }
 
 func (t *AWSTeeReader) Close() error {
+	log.Println("[debug] closing aws tee writer")
 	eg := errgroup.Group{}
 	for _, writeCloser := range t.writeClosers {
 		w := writeCloser
@@ -123,6 +125,8 @@ func (t *AWSTeeReader) Close() error {
 	if err != nil {
 		return err
 	}
+
+	log.Println("[debug] close complete aws tee writer")
 	return nil
 }
 
@@ -221,6 +225,10 @@ func newS3Writer(client S3Client, cfg *S3Config, outputName string) (*s3Writer, 
 	}
 	uploader := manager.NewUploader(client)
 	bw, err := newBackgroundWriter(func(_ context.Context, pr *io.PipeReader, c chan<- error) {
+		log.Println("[debug] start s3 writer")
+		defer func() {
+			log.Println("[debug] end s3 writer")
+		}()
 		_, err := uploader.Upload(ctx, &s3.PutObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
@@ -258,6 +266,11 @@ func s3ObjectAlreadyExists(ctx context.Context, client S3Client, bucket, key str
 	return true, nil
 }
 
+func (w *s3Writer) Close() error {
+	log.Println("[debug] close s3 writer")
+	return w.backgroundWriter.Close()
+}
+
 func (w *s3Writer) String() string {
 	return fmt.Sprintf("s3://%s/%s", w.bucket, w.key)
 }
@@ -277,12 +290,20 @@ func newCloudWatchLogsWriter(client CloudwatchLogsClient, cfg *CloudwatchLogsCon
 		return nil, fmt.Errorf("cloudwatch logs destination initialize: %w", err)
 	}
 	bg, err := newBackgroundWriter(func(ctx context.Context, pr *io.PipeReader, c chan<- error) {
+		log.Println("[debug] start cloudwatch logs writer")
+		defer func() {
+			log.Println("[debug] end cloudwatch logs writer")
+		}()
 		s := bufio.NewScanner(pr)
 		lines := make(chan cwtypes.InputLogEvent, 0)
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
+			log.Println("[debug] start cloudwatch logs buffering worker")
+			defer func() {
+				log.Println("[debug] end cloudwatch logs buffering worker")
+				wg.Done()
+			}()
 			for s.Scan() {
 				if text := s.Text(); text != "" {
 					lines <- cwtypes.InputLogEvent{
@@ -427,6 +448,7 @@ func prepareCloudwatchLogs(ctx context.Context, client CloudwatchLogsClient, log
 }
 
 func (w *cloudwatchLogsWriter) Close() error {
+	log.Println("[debug] close cloudwatch log writer")
 	io.WriteString(w.backgroundWriter, "\n")
 	return w.backgroundWriter.Close()
 }

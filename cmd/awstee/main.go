@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/fujiwara/logutils"
@@ -24,10 +25,10 @@ func main() {
 	cfg := awstee.DefaultConfig()
 	cfg.SetFlags(flag.CommandLine)
 	var (
-		config      string
-		interrupt   bool
-		minLevel    string
-		exitOnError bool
+		config          string
+		ignoreInterrupt bool
+		minLevel        string
+		exitOnError     bool
 	)
 	flag.CommandLine.Usage = func() {
 		fmt.Fprintln(flag.CommandLine.Output(), "awstee is a tee command-like tool with AWS as the output destination")
@@ -36,7 +37,7 @@ func main() {
 	}
 	flag.StringVar(&config, "config", "", "config file path")
 	flag.StringVar(&minLevel, "log-level", "info", "awstee log level")
-	flag.BoolVar(&interrupt, "i", false, "receive interrupt signal")
+	flag.BoolVar(&ignoreInterrupt, "i", false, "ignore interrupt signal")
 	flag.BoolVar(&exitOnError, "x", false, "exit if an error occurs during initialization")
 	flag.Parse()
 
@@ -54,17 +55,13 @@ func main() {
 	}
 	log.SetOutput(filter)
 
-	ctx := context.Background()
-	if interrupt {
-		var stop context.CancelFunc
-		ctx, stop = signal.NotifyContext(ctx, os.Interrupt, os.Kill)
-		defer stop()
-	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	var r io.Reader
 	if awsTeeReader, err := prepare(ctx, cfg, config); err != nil {
 		if exitOnError {
-			log.Fatal("[error] ", err)
+			log.Fatal("[error]", err)
 		} else {
 			log.Println("[error] ", err)
 		}
@@ -76,17 +73,33 @@ func main() {
 	}
 
 	s := bufio.NewScanner(r)
-	for s.Scan() {
-		fmt.Println(s.Text())
+	mainLoopEnd := make(chan struct{})
+	go func() {
+		log.Println("[debug] start main loop")
+		for s.Scan() {
+			fmt.Println(s.Text())
+		}
+		log.Println("[debug] end main loop")
+		close(mainLoopEnd)
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	condition := func() bool {
 		select {
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				log.Fatal(err)
-			}
-			return
+		case <-c:
+			log.Println("[debug] receive interrupt")
+			return ignoreInterrupt
+		case <-mainLoopEnd:
+			return false
 		default:
+			return true
 		}
 	}
+	for condition() {
+		time.Sleep(100 * time.Microsecond)
+	}
+	close(c)
 }
 
 func prepare(ctx context.Context, cfg *awstee.Config, config string) (*awstee.AWSTeeReader, error) {
