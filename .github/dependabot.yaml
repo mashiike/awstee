@@ -11,3 +11,5 @@ updates:
     ignore:
       - dependency-name: "aws*"
         update-types: ["version-update:semver-patch"]
+    default_labels:
+      - "dependencies"
