@@ -3,7 +3,7 @@ module github.com/mashiike/awstee
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.27
+	github.com/aws/aws-sdk-go v1.44.28
 	github.com/aws/aws-sdk-go-v2 v1.16.4
 	github.com/aws/aws-sdk-go-v2/config v1.15.9
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.14
@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-version v1.5.0
 	github.com/kayac/go-config v0.6.0
 	github.com/samber/lo v1.21.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
 
@@ -44,5 +44,5 @@ require (
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
