@@ -3,7 +3,7 @@ module github.com/mashiike/awstee
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.33
+	github.com/aws/aws-sdk-go v1.44.38
 	github.com/aws/aws-sdk-go-v2 v1.16.5
 	github.com/aws/aws-sdk-go-v2/config v1.15.10
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.15
