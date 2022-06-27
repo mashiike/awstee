@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-version v1.5.0
 	github.com/kayac/go-config v0.6.0
 	github.com/samber/lo v1.21.0
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.5
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 )
 
