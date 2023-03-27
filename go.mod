@@ -16,7 +16,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/kayac/go-config v0.6.0
-	github.com/samber/lo v1.38.0
+	github.com/samber/lo v1.38.1
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 )
